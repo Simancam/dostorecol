@@ -1,0 +1,46 @@
+/* Sidebar.css */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 16rem;
+    height: 100%;
+    background-color: #2d3748;
+    color: #ffffff;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  .logo-container {
+    padding: 1rem;
+  }
+  
+  .logo {
+    width: 100%;
+  }
+  
+  .nav {
+    margin-top: 2rem;
+  }
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    cursor: pointer;
+  }
+  
+  .nav-item:hover {
+    background-color: #4a5568;
+  }
+  
+  .nav-item i {
+    font-size: 1.25rem;
+    margin-right: 1rem;
+  }
+  
+  .nav-item span {
+    text-align: center;
+  }
+  

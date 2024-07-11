@@ -1,0 +1,18 @@
+@keyframes marquee {
+    0%   { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+}
+
+.marquee {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.marquee-text {
+    display: inline-block;
+    animation: marquee 25s linear infinite;
+    padding-left: 100%;
+}

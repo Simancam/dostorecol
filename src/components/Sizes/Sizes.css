@@ -1,0 +1,25 @@
+.size-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.25rem;
+}
+
+.size-item {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.size-item:hover {
+    background-color: #f0f0f0;
+}
+
+.size-item.selected {
+    background-color: #ff0000;
+    color: white;
+    border-color: #ff0000;
+}

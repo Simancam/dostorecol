@@ -1,0 +1,25 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0;
+    background-color: white;
+}
+
+.header-logo {
+    max-height: 12rem;
+    transition: max-height 0.3s ease;
+    margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    .header-logo {
+        max-height: 16rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-logo {
+        max-height: 24rem;
+    }
+}
