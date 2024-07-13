@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { API_URL } from '../../../config';
+import { API_URL } from '../../../../config';
 import AddInvModal from '../AddInvModal/AddInvModal';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../../context/AuthContext';
 import './InventoryTable.css';
 
 const InventoryTable = ({ setTotalCount }) => {
@@ -15,9 +15,11 @@ const InventoryTable = ({ setTotalCount }) => {
       const response = await fetch(`${API_URL}inventory`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       });
+
+      console.log(`inventoryHeaders: ${response.headers}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch');
@@ -52,9 +54,8 @@ const InventoryTable = ({ setTotalCount }) => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: requestBody
       });
 
@@ -66,6 +67,46 @@ const InventoryTable = ({ setTotalCount }) => {
     } catch (error) {
       console.error('Error adding sizes:', error);
     }
+  };
+
+  const handleDeleteClick = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}shoe/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      showAlert('Zapato eliminado');
+
+      fetchInventory();
+    } catch (error) {
+      console.error('Error deleting shoe:', error);
+    }
+  };
+
+  const showAlert = (message) => {
+    const alertBox = document.createElement('div');
+    alertBox.className = 'alert';
+    alertBox.textContent = message;
+    document.body.appendChild(alertBox);
+
+    setTimeout(() => {
+      alertBox.classList.add('show');
+    }, 100); // Delay to trigger transition
+
+    setTimeout(() => {
+      alertBox.classList.remove('show');
+      setTimeout(() => {
+        document.body.removeChild(alertBox);
+      }, 500); // Wait for the transition to complete
+    }, 3000); // Show the alert for 3 seconds
   };
 
   return (
@@ -92,7 +133,7 @@ const InventoryTable = ({ setTotalCount }) => {
               <td className="border px-4 py-2 text-center actions-column">
                 <i className="bi bi-plus-circle text-green-500 mx-2 cursor-pointer" onClick={() => handleAddClick(item.shoe.id)}></i>
                 <i className="bi bi-pencil-fill text-gray-500 mx-2 cursor-pointer"></i>
-                <i className="bi bi-x text-red-500 mx-2 cursor-pointer"></i>
+                <i className="bi bi-x text-red-500 mx-2 cursor-pointer" onClick={() => handleDeleteClick(item.shoe.id)}></i>
               </td>
             </tr>
           ))}

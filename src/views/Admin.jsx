@@ -1,19 +1,14 @@
+// src/components/Admin.js
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../sections/Admin/Sidebar/Sidebar';
-import AddBtn from '../sections/Admin/AddBtn/AddBtn';
-import InventoryTable from '../sections/Admin/Tables/InventoryTable';
-import OrdersTable from '../sections/Admin/Tables/OrderTable';
-import TotalCount from '../sections/Admin/TotalCount/TotalCount';
-import CustomModal from '../sections/Admin/Modal/Modal';
+import Inventory from '../sections/Admin/Inventory/Inventory';
+import OrdersContent from '../sections/Admin/Order/Order';
 import { API_URL } from '../config';
-import './Admin.css';
 import { useAuth } from '../context/AuthContext';
+import './Admin.css';
 
 function Admin() {
   const [content, setContent] = useState('Contenido de Inventario');
-  const [totalCount, setTotalCount] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const { token, loading } = useAuth();
 
   useEffect(() => {
@@ -22,29 +17,19 @@ function Admin() {
     }
   }, [loading, token]);
 
-  const handleAddClick = () => {
-    setSelectedItem(null);
-    setIsModalOpen(true);
-  };
-
-  const handleAddItemClick = (item) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleAddOrderClick = () => {
+    // Lógica para manejar el clic en "Añadir Pedido"
   };
 
   const handleFormSubmit = async (formData) => {
     try {
-      const response = await fetch(`${API_URL}shoe`, {
+      const response = await fetch(`${API_URL}order`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: formData,
-        credentials: 'include'
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -85,21 +70,9 @@ function Admin() {
   const renderContent = () => {
     switch (content) {
       case 'Contenido de Inventario':
-        return (
-          <div>
-            <h1 className="text-4xl font-bold">Inventario</h1>
-            <AddBtn onClick={handleAddClick} />
-            <InventoryTable setTotalCount={setTotalCount} onAdd={handleAddItemClick} shoeId={selectedItem?.id} />
-            <TotalCount totalCount={totalCount} />
-          </div>
-        );
+        return <Inventory />;
       case 'Contenido de Pedidos':
-        return (
-          <div>
-            <h1 className="text-4xl font-bold">Pedidos</h1>
-            <OrdersTable setTotalCount={setTotalCount} />
-          </div>
-        );
+        return <OrdersContent handleAddOrderClick={handleAddOrderClick} />;
       default:
         return <p>{content}</p>;
     }
@@ -114,18 +87,11 @@ function Admin() {
   }
 
   return (
-    <div className={`flex ${isModalOpen ? 'modal-open' : ''}`}>
+    <div className={`flex`}>
       <Sidebar setContent={setContent} />
       <div className="content p-4">
         {renderContent()}
       </div>
-      <CustomModal
-        token={token}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleFormSubmit}
-        item={selectedItem}
-      />
     </div>
   );
 }

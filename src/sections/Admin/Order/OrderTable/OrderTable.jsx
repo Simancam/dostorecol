@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { API_URL } from '../../../config';
+import { API_URL } from '../../../../config';
 import './OrderTable.css';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../../context/AuthContext';
 
 const OrdersTable = ({ setTotalCount }) => {
   const [orders, setOrders] = useState([]);
@@ -13,9 +13,7 @@ const OrdersTable = ({ setTotalCount }) => {
         const response = await fetch(`${API_URL}order`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Access-Control-Allow-Credentials': 'true',
           },
-          credentials: 'include',
         });
 
         if (!response.ok) {

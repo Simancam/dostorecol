@@ -3,6 +3,7 @@ import { Button, TextInput, Spinner } from 'flowbite-react';
 import './WspBtn.css';
 import { API_URL } from '../../config';
 import { useAuth } from '../../context/AuthContext';
+import CustomModal from '../Modal/Modal';
 
 const WspBtn = ({ shoe, selectedSize }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,32 +83,22 @@ Url: *${currentUrl}*`;
                 <span className="ml-2">Comprar via WhatsApp</span>
             </button>
 
-            {isModalOpen && (
-                <div className={`custom-modal ${isModalOpen ? 'show' : ''}`}>
-                    <div className="custom-modal-content">
-                        <div className="custom-modal-header">
-                            <h2>Ingresa tu nombre completo</h2>
-                            <button onClick={() => setIsModalOpen(false)}>&times;</button>
-                        </div>
-                        <div className="custom-modal-body">
-                            <TextInput
-                                placeholder="Nombre completo"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-                        <div className="custom-modal-footer">
-                            <Button onClick={handleFormSubmit} color="blue" disabled={loading}>
-                                {loading ? <Spinner size="sm" /> : 'Enviar'}
-                            </Button>
-                            <Button color="gray" onClick={() => setIsModalOpen(false)} disabled={loading}>
-                                Cancelar
-                            </Button>
-                        </div>
-                    </div>
+            <CustomModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Ingresa tu nombre completo">
+                <TextInput
+                    placeholder="Nombre completo"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    disabled={loading}
+                />
+                <div className="custom-modal-footer">
+                    <Button onClick={handleFormSubmit} color="blue" disabled={loading}>
+                        {loading ? <Spinner size="sm" /> : 'Enviar'}
+                    </Button>
+                    <Button color="gray" onClick={() => setIsModalOpen(false)} disabled={loading}>
+                        Cancelar
+                    </Button>
                 </div>
-            )}
+            </CustomModal>
         </>
     );
 };
