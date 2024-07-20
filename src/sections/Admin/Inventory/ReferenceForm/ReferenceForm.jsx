@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, TextInput, Alert, Spinner } from 'flowbite-react';
 import { API_URL } from '../../../../config';
 
-const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading }) => {
+const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading, fetchInventory }) => {
   const [brand, setBrand] = useState('');
   const [modelName, setModelName] = useState('');
   const [sizeData, setSizeData] = useState([{ size: '', amount: '' }]);
@@ -76,6 +76,7 @@ const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading }) 
       }
 
       setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
+      fetchInventory();  // Llamar a la función para actualizar el inventario
       setLoading(false);
       setTimeout(() => {
         setAlert(null);

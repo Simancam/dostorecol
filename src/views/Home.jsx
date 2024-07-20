@@ -17,9 +17,9 @@ const Home = () => {
     useEffect(() => {
         fetch(`${API_URL}inventory`)
             .then(response => response.json())
-            .then(data => {
-                setShoesData(data.inventory);
-                setFilteredShoes(data.inventory); 
+            .then(inventory => {
+                setShoesData(inventory);
+                setFilteredShoes(inventory); 
             })
             .catch(error => console.error('Error fetching shoes data:', error));
     }, []);

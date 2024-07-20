@@ -1,13 +1,13 @@
-// src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../firebase/firebaseConfig';
-import { getIdToken } from "firebase/auth";
+import { getIdToken, getIdTokenResult } from "firebase/auth";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [tokenExpirationTime, setTokenExpirationTime] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,9 +15,12 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       if (user) {
         const token = await getIdToken(user);
+        const tokenResult = await getIdTokenResult(user);
         setToken(token);
+        setTokenExpirationTime(new Date(tokenResult.expirationTime).getTime());
       } else {
         setToken(null);
+        setTokenExpirationTime(null);
       }
       setLoading(false);
     });
@@ -26,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading }}>
+    <AuthContext.Provider value={{ user, token, tokenExpirationTime, loading }}>
       {children}
     </AuthContext.Provider>
   );

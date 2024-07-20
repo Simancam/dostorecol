@@ -23,8 +23,8 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
         if (!response.ok) {
           throw new Error('Failed to fetch shoes');
         }
-        const data = await response.json();
-        setShoes(data.inventory);
+        const inventory = await response.json();
+        setShoes(inventory);
       } catch (error) {
         console.error('Error fetching shoes:', error);
       }
@@ -89,9 +89,9 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
           disabled={loading}
         >
           <option value="" disabled>Seleccionar Zapato</option>
-          {shoes.map(shoe => (
-            <option key={shoe.id} value={shoe.shoe.id}>
-              {shoe.shoe.brand} - {shoe.shoe.modelName}
+          {shoes.map(({ shoe }) => (
+            <option key={shoe.id} value={shoe.id}>
+              {shoe.brand} - {shoe.modelName}
             </option>
           ))}
         </Select>
@@ -104,9 +104,9 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
           disabled={loading}
         >
           <option value="" disabled>Seleccionar Talla</option>
-          {sizes.map(size => (
-            <option key={size.size} value={size.size}>
-              {size.size} ({size.amount})
+          {sizes.map(({ size }) => (
+            <option key={size.id} value={size}>
+              {size} ({size.amount})
             </option>
           ))}
         </Select>

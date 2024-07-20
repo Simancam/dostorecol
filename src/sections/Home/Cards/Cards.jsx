@@ -10,7 +10,7 @@ const Cards = ({ filteredShoes }) => {
         <div className="cards-container animate-blurred-fade-in">
             {filteredShoes.map(item => (
                 <Card
-                    key={item.id}
+                    key={item.shoe.id}
                     id={item.shoe.id}
                     image={item.shoe.imageUrl}
                     status="disponible"

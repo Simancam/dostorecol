@@ -1,42 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { API_URL } from '../../../../config';
 import AddInvModal from '../AddInvModal/AddInvModal';
 import { useAuth } from '../../../../context/AuthContext';
 import './InventoryTable.css';
 
-const InventoryTable = ({ setTotalCount }) => {
-  const [inventory, setInventory] = useState([]);
+const InventoryTable = ({ inventory, fetchInventory }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const { token } = useAuth();
   const [shoeId, setShoeId] = useState("");
-
-  const fetchInventory = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}inventory`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log(`inventoryHeaders: ${response.headers}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch');
-      }
-
-      const data = await response.json();
-      setInventory(data.inventory);
-      const totalCount = data.inventory.reduce((total, item) => total + item.totalAmount, 0);
-      setTotalCount(totalCount);
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
-    }
-  }, [setTotalCount]);
-
-  useEffect(() => {
-    fetchInventory();
-  }, [fetchInventory]);
 
   const handleAddClick = (id) => {
     setShoeId(id);
@@ -63,7 +34,7 @@ const InventoryTable = ({ setTotalCount }) => {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      fetchInventory();
+      fetchInventory(); // Actualizar inventario después de añadir
     } catch (error) {
       console.error('Error adding sizes:', error);
     }
@@ -84,8 +55,7 @@ const InventoryTable = ({ setTotalCount }) => {
       }
 
       showAlert('Zapato eliminado');
-
-      fetchInventory();
+      fetchInventory(); // Actualizar inventario después de eliminar
     } catch (error) {
       console.error('Error deleting shoe:', error);
     }
@@ -124,7 +94,7 @@ const InventoryTable = ({ setTotalCount }) => {
         </thead>
         <tbody>
           {inventory.map((item) => (
-            <tr key={item.id} className="group">
+            <tr key={item.shoe.id} className="group">
               <td className="border px-4 py-2">{item.shoe.modelName}</td>
               <td className="border px-4 py-2">{item.shoe.brand}</td>
               <td className="border px-4 py-2">{item.totalAmount}</td>

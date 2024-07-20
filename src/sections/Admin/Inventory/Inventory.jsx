@@ -1,5 +1,4 @@
-// src/components/Inventory.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AddBtn from './AddBtn/AddBtn';
 import InventoryTable from './InventoryTable/InventoryTable';
 import TotalCount from './TotalCount/TotalCount';
@@ -10,12 +9,35 @@ import { API_URL } from '../../../config';
 import { Alert } from 'flowbite-react';
 
 const Inventory = () => {
+  const [inventory, setInventory] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
+
+  const fetchInventory = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}inventory`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Error fetching inventory');
+      }
+      const data = await response.json();
+      setInventory(data);
+      setTotalCount(data.reduce((total, item) => total + item.totalAmount, 0));
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
 
   const handleAddClick = () => {
     setSelectedItem(null);
@@ -48,6 +70,7 @@ const Inventory = () => {
       const data = await response.json();
       console.log(data);
       setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
+      fetchInventory(); // Llamar a fetchInventory para actualizar los datos después de añadir una referencia
       setTimeout(() => {
         setAlert(null);
       }, 2000);
@@ -68,9 +91,18 @@ const Inventory = () => {
           </Alert>
         </div>
       )}
-      <h1 className="text-4xl font-bold">Inventario</h1>
-      <AddBtn onClick={handleAddClick} />
-      <InventoryTable setTotalCount={setTotalCount} onAdd={handleAddItemClick} shoeId={selectedItem?.id} />
+      <h1 className="text-4xl font-bold mb-4">Inventario</h1>
+      <div className="flex items-center mb-4">
+        <AddBtn onClick={handleAddClick} />
+        <button
+          onClick={fetchInventory}
+          className="ml-4 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200"
+          title="Actualizar Inventario"
+        >
+          <i className="bi bi-arrow-repeat text-xl"></i>
+        </button>
+      </div>
+      <InventoryTable inventory={inventory} fetchInventory={fetchInventory} />
       <TotalCount totalCount={totalCount} />
       <CustomModal
         isOpen={isModalOpen}
@@ -85,6 +117,7 @@ const Inventory = () => {
           setAlert={setAlert}
           setLoading={setLoading}
           loading={loading}
+          fetchInventory={fetchInventory}
         />
       </CustomModal>
     </div>

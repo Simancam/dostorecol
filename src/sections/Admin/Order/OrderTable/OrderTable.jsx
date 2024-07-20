@@ -20,9 +20,9 @@ const OrdersTable = ({ setTotalCount }) => {
           throw new Error(`Failed to fetch orders: ${response.json().message}`);
         }
 
-        const data = await response.json();
-        setOrders(data.orders);
-        setTotalCount(data.orders.length);
+        const order = await response.json();
+        setOrders(order);
+        setTotalCount(order.length);
       } catch (error) {
         console.error('Error fetching orders:', error);
       }
@@ -49,10 +49,11 @@ const OrdersTable = ({ setTotalCount }) => {
         throw new Error(`Failed to update order status: ${response.statusText}`);
       }
 
-      const updatedOrder = await response.json();
+      const { newOrder } = await response.json();
+      console.log(newOrder);
       setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === orderId ? { ...order, status: updatedOrder.order.status } : order
+        prevOrders.map((prevOrder) =>
+          prevOrder.id === orderId ? { ...prevOrder, status: newOrder.status } : prevOrder
         )
       );
     } catch (error) {

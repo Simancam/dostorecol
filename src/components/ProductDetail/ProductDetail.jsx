@@ -14,8 +14,8 @@ const ProductDetail = () => {
     useEffect(() => {
         fetch(`${API_URL}inventory`)
             .then(response => response.json())
-            .then(data => {
-                const foundItem = data.inventory.find(item => item.shoe.id === id);
+            .then(inventory => {
+                const foundItem = inventory.find(item => item.shoe.id === id);
                 setInventoryItem(foundItem || null);
             })
             .catch(error => console.error('Error fetching shoe data:', error))

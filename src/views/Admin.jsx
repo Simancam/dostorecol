@@ -1,49 +1,52 @@
-// src/components/Admin.js
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../sections/Admin/Sidebar/Sidebar';
 import Inventory from '../sections/Admin/Inventory/Inventory';
 import OrdersContent from '../sections/Admin/Order/Order';
+import SessionTimer from '../sections/Admin/SessionTimer/SessionTimer';
 import { API_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
 import './Admin.css';
 
 function Admin() {
   const [content, setContent] = useState('Contenido de Inventario');
-  const { token, loading } = useAuth();
+  const { token, tokenExpirationTime, loading } = useAuth();
 
   useEffect(() => {
     if (!loading) {
       console.log('Token:', token);
+      if (tokenExpirationTime) {
+        console.log('Token expiration time:', new Date(tokenExpirationTime));
+      }
     }
-  }, [loading, token]);
+  }, [loading, token, tokenExpirationTime]);
 
   const handleAddOrderClick = () => {
     // Lógica para manejar el clic en "Añadir Pedido"
   };
 
-  const handleFormSubmit = async (formData) => {
-    try {
-      const response = await fetch(`${API_URL}order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData),
-      });
+  // const handleFormSubmit = async (formData) => {
+  //   try {
+  //     const response = await fetch(`${API_URL}order`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify(formData),
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`Error ${response.status}: ${response.statusText}`);
+  //     }
 
-      const data = await response.json();
-      console.log(data);
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error:', error);
-      return Promise.reject();
-    }
-  };
+  //     const data = await response.json();
+  //     console.log(data);
+  //     return Promise.resolve();
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     return Promise.reject();
+  //   }
+  // };
 
   const fetchInventory = useCallback(async () => {
     if (loading) return;
@@ -87,10 +90,11 @@ function Admin() {
   }
 
   return (
-    <div className={`flex`}>
+    <div className="flex">
       <Sidebar setContent={setContent} />
       <div className="content p-4">
         {renderContent()}
+        {tokenExpirationTime && <SessionTimer tokenExpirationTime={tokenExpirationTime} />}
       </div>
     </div>
   );
