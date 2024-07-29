@@ -1,4 +1,3 @@
-// src/components/OrderForm.js
 import React, { useState, useEffect } from 'react';
 import { Button, TextInput, Select, Spinner } from 'flowbite-react';
 import { API_URL } from '../../../../config';
@@ -25,10 +24,12 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
         }
         const inventory = await response.json();
         setShoes(inventory);
+        console.log('Fetched shoes:', inventory);
       } catch (error) {
         console.error('Error fetching shoes:', error);
       }
     };
+
     fetchShoes();
   }, [token]);
 
@@ -36,9 +37,10 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
     const selectedShoeId = event.target.value;
     setShoeId(selectedShoeId);
 
-    const selectedShoe = shoes.find(shoe => shoe.shoe.id === selectedShoeId);
+    const selectedShoe = shoes.find(({ shoe }) => shoe.id === selectedShoeId);
     if (selectedShoe) {
       setSizes(selectedShoe.sizes);
+      console.log('Selected shoe sizes:', selectedShoe.sizes);
     } else {
       setSizes([]);
     }
@@ -104,9 +106,9 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
           disabled={loading}
         >
           <option value="" disabled>Seleccionar Talla</option>
-          {sizes.map(({ size }) => (
-            <option key={size.id} value={size}>
-              {size} ({size.amount})
+          {sizes.map((sizeObj) => (
+            <option key={sizeObj.size} value={sizeObj.size}>
+              {sizeObj.size} ({sizeObj.amount})
             </option>
           ))}
         </Select>

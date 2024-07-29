@@ -1,29 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import './SessionTimer.css'; // Archivo de estilos
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SessionTimer = ({ tokenExpirationTime }) => {
-  const [timeLeft, setTimeLeft] = useState(tokenExpirationTime - Date.now());
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+  const inactivityTimeout = 15 * 60 * 1000; // 15 minutos en milisegundos
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(tokenExpirationTime - Date.now());
-    }, 1000);
+    let tokenInterval;
+    let inactivityTimer;
 
-    return () => clearInterval(interval);
-  }, [tokenExpirationTime]);
+    const resetInactivityTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(handleSessionEnd, inactivityTimeout);
+    };
 
-  const formatTime = (milliseconds) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
+    const handleSessionEnd = () => {
+      setShowModal(true);
+      setTimeout(() => {
+        setShowModal(false);
+        navigate('/login');
+      }, 3000);
+    };
 
-  return (
-    <div className="session-timer">
-      Tiempo de sesión restante: {formatTime(timeLeft)}
+    const checkTokenExpiration = () => {
+      if (Date.now() >= tokenExpirationTime) {
+        clearInterval(tokenInterval);
+        handleSessionEnd();
+      }
+    };
+
+    tokenInterval = setInterval(checkTokenExpiration, 1000);
+    resetInactivityTimer();
+
+    // Agregar event listeners para resetear el timer de inactividad
+    const events = ['mousedown', 'keypress', 'scroll', 'mousemove'];
+    events.forEach(event => document.addEventListener(event, resetInactivityTimer));
+
+    return () => {
+      clearInterval(tokenInterval);
+      clearTimeout(inactivityTimer);
+      events.forEach(event => document.removeEventListener(event, resetInactivityTimer));
+    };
+  }, [tokenExpirationTime, navigate, inactivityTimeout]);
+
+  const Modal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl">
+        <h2 className="text-xl font-bold mb-4">Sesión Expirada</h2>
+        <p>Su sesión ha expirado. Será redirigido al login.</p>
+      </div>
     </div>
   );
+
+  return showModal ? <Modal /> : null;
 };
 
 export default SessionTimer;

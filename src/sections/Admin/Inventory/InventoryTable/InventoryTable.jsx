@@ -1,23 +1,26 @@
+// InventoryTable.jsx
 import React, { useState } from 'react';
 import { API_URL } from '../../../../config';
 import AddInvModal from '../AddInvModal/AddInvModal';
+import EditReference from '../EditReference/EditReference';
 import { useAuth } from '../../../../context/AuthContext';
 import './InventoryTable.css';
 
 const InventoryTable = ({ inventory, fetchInventory }) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const { token } = useAuth();
-  const [shoeId, setShoeId] = useState("");
+  const [editingShoe, setEditingShoe] = useState(null);
 
   const handleAddClick = (id) => {
-    setShoeId(id);
+    setEditingShoe({ id });
     setModalOpen(true);
   };
 
   const handleModalSubmit = async (sizes) => {
     try {
       const requestBody = JSON.stringify({
-        shoeId: shoeId,
+        shoeId: editingShoe.id,
         sizes: sizes.map(size => parseInt(size.size)),
         amounts: sizes.map(size => parseInt(size.amount))
       });
@@ -35,8 +38,39 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
       }
 
       fetchInventory(); // Actualizar inventario después de añadir
+      showAlert('Inventario actualizado');
     } catch (error) {
       console.error('Error adding sizes:', error);
+      showAlert('Error al actualizar inventario');
+    }
+  };
+
+  const handleEditClick = (shoe) => {
+    console.log('handleEditClick:', shoe); // Debug log
+    setEditingShoe(shoe);
+    setEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (editedShoe) => {
+    try {
+      const response = await fetch(`${API_URL}shoe/${editedShoe.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedShoe)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      showAlert('Zapato editado');
+      fetchInventory(); // Update inventory after editing
+    } catch (error) {
+      console.error('Error editing shoe:', error);
+      showAlert('Error al editar zapato');
     }
   };
 
@@ -58,6 +92,7 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
       fetchInventory(); // Actualizar inventario después de eliminar
     } catch (error) {
       console.error('Error deleting shoe:', error);
+      showAlert('Error al eliminar zapato');
     }
   };
 
@@ -102,14 +137,15 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
               <td className="border px-4 py-2">{item.totalAmount}</td>
               <td className="border px-4 py-2 text-center actions-column">
                 <i className="bi bi-plus-circle text-green-500 mx-2 cursor-pointer" onClick={() => handleAddClick(item.shoe.id)}></i>
-                <i className="bi bi-pencil-fill text-gray-500 mx-2 cursor-pointer"></i>
+                <i className="bi bi-pencil-fill text-gray-500 mx-2 cursor-pointer" onClick={() => handleEditClick(item.shoe)}></i>
                 <i className="bi bi-x text-red-500 mx-2 cursor-pointer" onClick={() => handleDeleteClick(item.shoe.id)}></i>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <AddInvModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleModalSubmit} shoeId={shoeId} />
+      <AddInvModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleModalSubmit} shoeId={editingShoe?.id} />
+      <EditReference isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} onSubmit={handleEditSubmit} shoeData={editingShoe} />
     </div>
   );
 };
