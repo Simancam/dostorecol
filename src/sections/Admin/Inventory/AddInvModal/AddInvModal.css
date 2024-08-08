@@ -1,87 +1,84 @@
-/* AddInvModal.css */
 .custom-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease-in-out;
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-  .custom-modal.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  .custom-modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 600px;
-    max-width: 90%;
-    transform: translateY(-100%);
-    transition: transform 0.3s ease-in-out;
-    opacity: 0;
-  }
-  
-  .custom-modal.show .custom-modal-content {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  
-  .custom-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 10px;
-  }
-  
-  .custom-modal-header h2 {
-    margin: 0;
-  }
-  
-  .custom-modal-header button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  
-  .custom-modal-body {
-    padding: 20px 0;
-  }
-  
-  .size-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .add-size-btn {
-    background: green;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  
-  .submit-btn {
-    background: blue;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-    display: block;
-    margin-top: 20px;
-  }  
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.custom-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.custom-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90%;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-in-out;
+  opacity: 0;
+}
+
+.custom-modal.show .custom-modal-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.custom-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 10px;
+}
+
+.custom-modal-header h2 {
+  margin: 0;
+}
+
+.custom-modal-header button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.custom-modal-body {
+  padding: 20px 0;
+}
+
+.alert {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 9999;
+  color: white;
+}
+
+.alert.success {
+  background-color: #4caf50;
+}
+
+.alert.error {
+  background-color: #f44336;
+}
+
+.alert.show {
+  opacity: 1;
+}

@@ -15,6 +15,7 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
   const itemsPerPage = 10;
 
   useEffect(() => {
+    // Ordenar el inventario alfabéticamente por nombre
     const sorted = [...inventory].sort((a, b) =>
       a.shoe.modelName.localeCompare(b.shoe.modelName)
     );
@@ -36,10 +37,12 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
     };
   }, [fetchInventory]);
 
+  // Calcular el índice del primer y último elemento de la página actual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedInventory.slice(indexOfFirstItem, indexOfLastItem);
 
+  // Cambiar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleAddClick = (id) => {
@@ -68,7 +71,8 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
       }
 
       showAlert({ type: 'success', message: 'Inventario actualizado' });
-      await fetchInventory();
+      await fetchInventory(); // Actualiza el inventario después de agregar
+      console.log('Inventory updated after adding sizes');
       setModalOpen(false);
     } catch (error) {
       console.error('Error adding sizes:', error);
@@ -97,7 +101,8 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
       }
 
       showAlert({ type: 'success', message: 'Zapato editado' });
-      await fetchInventory();
+      await fetchInventory(); // Actualiza el inventario después de editar
+      console.log('Inventory updated after editing shoe');
       setEditModalOpen(false);
     } catch (error) {
       console.error('Error editing shoe:', error);
@@ -120,7 +125,8 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
       }
 
       showAlert({ type: 'success', message: 'Zapato eliminado' });
-      await fetchInventory();
+      await fetchInventory(); // Actualiza el inventario después de eliminar
+      console.log('Inventory updated after deleting shoe');
     } catch (error) {
       console.error('Error deleting shoe:', error);
       showAlert({ type: 'error', message: 'Error al eliminar zapato' });
@@ -187,14 +193,6 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
         </tbody>
       </table>
       <div className="pagination">
-        <button
-          className="pagination-button"
-          onClick={() => paginate(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Anterior
-        </button>
-
         {Array.from({ length: Math.ceil(sortedInventory.length / itemsPerPage) }).map((_, index) => (
           <button
             key={index}
@@ -204,18 +202,6 @@ const InventoryTable = ({ inventory, fetchInventory }) => {
             {index + 1}
           </button>
         ))}
-
-        <button
-          className="pagination-button"
-          onClick={() => paginate(currentPage + 1)}
-          disabled={currentPage === Math.ceil(sortedInventory.length / itemsPerPage)}
-        >
-          Siguiente
-        </button>
-
-        <span className="pagination-info">
-          Página {currentPage} de {Math.ceil(sortedInventory.length / itemsPerPage)}
-        </span>
       </div>
       <AddInvModal
         isOpen={modalOpen}
