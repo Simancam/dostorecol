@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextInput, Select, Spinner } from 'flowbite-react';
 import { API_URL } from '../../../../config';
+import './OrderForm.css';
 
 const OrderForm = ({ onSubmit, token, onClose, loading }) => {
   const [clientName, setClientName] = useState('');
@@ -8,6 +9,12 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
   const [size, setSize] = useState('');
   const [sizes, setSizes] = useState([]);
   const [shoes, setShoes] = useState([]);
+  const [price, setPrice] = useState(0);
+  
+  // Estado para la alerta
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertContent, setAlertContent] = useState('');
+  const [alertType, setAlertType] = useState('success');
 
   useEffect(() => {
     const fetchShoes = async () => {
@@ -27,6 +34,7 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
         console.log('Fetched shoes:', inventory);
       } catch (error) {
         console.error('Error fetching shoes:', error);
+        handleAlert('Failed to fetch shoes', 'error'); // Mostrar alerta de error
       }
     };
 
@@ -40,9 +48,16 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
     const selectedShoe = shoes.find(({ shoe }) => shoe.id === selectedShoeId);
     if (selectedShoe) {
       setSizes(selectedShoe.sizes);
+      // Calcular el precio final basado en el descuento
+      const finalPrice = selectedShoe.shoe.discount > 0
+        ? selectedShoe.shoe.price * (1 - selectedShoe.shoe.discount / 100)
+        : selectedShoe.shoe.price;
+      setPrice(finalPrice);
       console.log('Selected shoe sizes:', selectedShoe.sizes);
+      console.log('Selected shoe price:', finalPrice);
     } else {
       setSizes([]);
+      setPrice(0);
     }
   };
 
@@ -58,6 +73,7 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
         clientName,
         shoeId,
         size,
+        price,
         status: 'Pendiente'
       };
 
@@ -65,14 +81,36 @@ const OrderForm = ({ onSubmit, token, onClose, loading }) => {
       setClientName('');
       setShoeId('');
       setSize('');
+      setPrice(0);
       onClose();
+      
+      handleAlert('Order saved successfully', 'success'); // Mostrar alerta de éxito
     } catch (e) {
       console.error(e);
+      handleAlert('Failed to save order', 'error'); // Mostrar alerta de error
     }
+  };
+
+  // Función para manejar la alerta
+  const handleAlert = (message, type) => {
+    setAlertContent(message);
+    setAlertType(type);
+    setShowAlert(true);
+
+    // Ocultar la alerta después de 3 segundos
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 3000);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
+      {/* Mostrar la alerta si `showAlert` es verdadero */}
+      {showAlert && (
+        <div className={`alert ${alertType} ${showAlert ? 'show' : ''}`}>
+          {alertContent}
+        </div>
+      )}
       <div className="w-full sm:w-1/2">
         <TextInput
           placeholder="Nombre del Cliente"

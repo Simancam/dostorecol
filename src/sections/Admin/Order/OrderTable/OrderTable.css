@@ -1,69 +1,137 @@
 .table-container {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 20px;
-  }
-  
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    border-radius: 0.5rem;
-    overflow: hidden;
-  }
-  
-  th, td {
-    border: 1px solid #ddd;
-    padding: 0.5rem;
-  }
-  
-  th {
-    background-color: #1f2937;
-    color: white;
-    text-align: left;
-  }
-  
-  td {
-    background-color: #f8f8f8;
-    position: relative;
-  }
-  
-  .group:hover .invisible {
-    visibility: visible;
-  }
-  
-  .actions-column {
-    width: 150px; /* Aumentar el ancho de la columna de acciones */
-  }
-  
-  .text-center {
-    text-align: center;
-  }
-  
-  .text-gray-500 {
-    color: #6b7280;
-  }
-  
-  .text-red-500 {
-    color: #ef4444;
-  }
-  
-  .text-green-500 {
-    color: #10b981;
-  }
-  
-  .text-blue-500 {
-    color: #3b82f6;
-  }
-  
-  .text-yellow-500 {
-    color: #f59e0b;
-  }
-  
-  .mx-2 {
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-  }
-  
-  .cursor-pointer {
-    cursor: pointer;
-  }  
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+  position: relative;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+th {
+  background-color: #1f2937;
+  color: white;
+  text-align: left;
+}
+
+td {
+  background-color: #f8f8f8;
+  position: relative;
+}
+
+.group:hover .invisible {
+  visibility: visible;
+}
+
+.actions-column {
+  width: 150px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+.text-green-500 {
+  color: #10b981;
+}
+
+.text-blue-500 {
+  color: #3b82f6;
+}
+
+.text-yellow-500 {
+  color: #f59e0b;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}  
+
+.alert {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 9999;
+  color: white;
+  display: none; /* Initially hidden */
+}
+
+.alert.success {
+  background-color: #4caf50;
+}
+
+.alert.error {
+  background-color: #f44336;
+}
+
+.alert.show {
+  opacity: 1;
+  display: block; /* Show when active */
+}
+
+/* Estilos de paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 0;
+}
+
+.pagination-button {
+  margin: 0 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+  color: #333;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.pagination-button:hover {
+  background-color: #e0e0e0;
+}
+
+.pagination-button.active {
+  background-color: #1f2937;
+  color: white;
+  border-color: #1f2937;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  margin: 0 10px;
+  font-size: 14px;
+  color: #666;
+}

@@ -2,6 +2,7 @@
   width: 100%;
   overflow-x: auto;
   margin-top: 20px;
+  position: relative;
 }
 
 table {
@@ -32,7 +33,7 @@ td {
 }
 
 .actions-column {
-  width: 150px; /* Aumentar el ancho de la columna de acciones */
+  width: 150px;
 }
 
 .text-center {
@@ -64,15 +65,66 @@ td {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  background-color: #4caf50;
-  color: white;
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  z-index: 9999;
+  color: white;
+  display: none; /* Initially hidden */
+}
+
+.alert.success {
+  background-color: #4caf50;
+}
+
+.alert.error {
+  background-color: #f44336;
 }
 
 .alert.show {
   opacity: 1;
+  display: block; /* Show when active */
+}
+
+/* Estilos de paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 0;
+}
+
+.pagination-button {
+  margin: 0 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+  color: #333;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.pagination-button:hover {
+  background-color: #e0e0e0;
+}
+
+.pagination-button.active {
+  background-color: #1f2937;
+  color: white;
+  border-color: #1f2937;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  margin: 0 10px;
+  font-size: 14px;
+  color: #666;
 }

@@ -27,6 +27,7 @@ const Inventory = () => {
       if (!response.ok) {
         throw new Error('Error fetching inventory');
       }
+      console.log('Inventory Fetching:');
       const data = await response.json();
       setInventory(data);
       setTotalCount(data.reduce((total, item) => total + item.totalAmount, 0));
@@ -70,7 +71,8 @@ const Inventory = () => {
       const data = await response.json();
       console.log(data);
       setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
-      fetchInventory(); // Llamar a fetchInventory para actualizar los datos después de añadir una referencia
+      await fetchInventory();
+      console.log('Inventory updated after adding reference');
       setTimeout(() => {
         setAlert(null);
       }, 2000);
@@ -102,7 +104,7 @@ const Inventory = () => {
           <i className="bi bi-arrow-repeat text-xl"></i>
         </button>
       </div>
-      <InventoryTable inventory={inventory} fetchInventory={fetchInventory} />
+      <InventoryTable inventory={inventory} fetchInventory={fetchInventory} setAlert={setAlert}/>
       <TotalCount totalCount={totalCount} />
       <CustomModal
         isOpen={isModalOpen}

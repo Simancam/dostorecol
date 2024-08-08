@@ -21,12 +21,7 @@ const WspBtn = ({ shoe, selectedSize }) => {
 
     const currentUrl = window.location.href;
 
-    const message = `Hola, soy *${fullName}*.
-Estoy interesado en comprar las *${shoe.modelName}*
-Marca: *${shoe.brand}*
-Talla: *${selectedSize}*
-Precio: *${formatPrice(shoe.price)} COP*
-Url: *${currentUrl}*`;
+    const message = `Hola, soy *${fullName}*. Estoy interesado en comprar las *${shoe.modelName}* Marca: *${shoe.brand}* Talla: *${selectedSize}* Precio: *${formatPrice(shoe.price)} COP* Url: *${currentUrl}*`;
 
     const handleWspClick = () => {
         if (!selectedSize) {
@@ -48,7 +43,7 @@ Url: *${currentUrl}*`;
                     shoeId: shoe.id,
                     clientName: fullName,
                     size: selectedSize,
-                    color: shoe.color,
+                    price: shoe.discountedPrice || shoe.price, // Usamos el precio con descuento si existe, si no, el precio base
                     status: 'Pendiente'
                 }),
             });
@@ -75,26 +70,27 @@ Url: *${currentUrl}*`;
 
     return (
         <>
-            <button
-                onClick={handleWspClick}
-                className={`whatsapp-button ${!selectedSize ? 'inactive' : ''}`}
+            <Button onClick={handleWspClick} className="wsp-btn">
+                <i className="bi bi-whatsapp mr-2 "></i> {/* Icono de WhatsApp */}
+                Comprar via WhatsApp
+            </Button>
+            <CustomModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Ingresa tu nombre completo"
             >
-                <i className="bi bi-whatsapp"></i>
-                <span className="ml-2">Comprar via WhatsApp</span>
-            </button>
-
-            <CustomModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Ingresa tu nombre completo">
                 <TextInput
+                    type="text"
                     placeholder="Nombre completo"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     disabled={loading}
                 />
-                <div className="custom-modal-footer">
-                    <Button onClick={handleFormSubmit} color="blue" disabled={loading}>
-                        {loading ? <Spinner size="sm" /> : 'Enviar'}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                    <Button onClick={handleFormSubmit} className="modal-btn-submit" disabled={loading}>
+                        {loading ? <Spinner /> : 'Enviar'}
                     </Button>
-                    <Button color="gray" onClick={() => setIsModalOpen(false)} disabled={loading}>
+                    <Button onClick={() => setIsModalOpen(false)} className="modal-btn-cancel" disabled={loading}>
                         Cancelar
                     </Button>
                 </div>

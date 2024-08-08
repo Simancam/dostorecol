@@ -1,171 +1,185 @@
-// EditReference.jsx
 import React, { useState, useEffect } from 'react';
+import { Button, TextInput, Spinner } from 'flowbite-react';
 import { API_URL } from '../../../../config';
-import { useAuth } from '../../../../context/AuthContext';
+import Modal from '../../../../components/Modal/Modal';
 import './EditReference.css';
-import { Spinner } from 'flowbite-react';
 
-const EditReference = ({ isOpen, onClose, onSubmit, shoeData }) => {
-  const [editedShoe, setEditedShoe] = useState({
-    brand: '',
-    price: '',
-    modelName: '',
-    discount: ''
-  });
-  const [image, setImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { token } = useAuth();
+const EditShoeForm = ({ item, token, onClose, setAlert, fetchInventory, isOpen }) => {
+  const [loading, setLoading] = useState(false);
+  const [brand, setBrand] = useState('');
+  const [modelName, setModelName] = useState('');
+  const [sizeData, setSizeData] = useState([{ size: '', amount: '' }]);
+  const [price, setPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
-    console.log('shoeData in EditReference:', shoeData); // Debug log
-    if (shoeData) {
-      setEditedShoe({
-        id: shoeData.id, // Asegúrate de incluir el id
-        brand: shoeData.brand || '',
-        price: shoeData.price != null ? shoeData.price.toString() : '',
-        modelName: shoeData.modelName || '',
-        discount: shoeData.discount != null ? shoeData.discount.toString() : ''
-      });
-      setPreviewUrl(shoeData.imageUrl || '');
+    if (item) {
+      setBrand(item.brand || '');
+      setModelName(item.modelName || '');
+      setPrice(item.price ? item.price.toString() : '');
+      setImageUrl(item.imageUrl || '');
+      setDiscount(item.discount !== undefined ? item.discount : 0);
+      setSizeData(item.sizes ? item.sizes.map((size) => ({ size: size.size, amount: size.amount })) : [{ size: '', amount: '' }]);
     }
-  }, [shoeData]);
+  }, [item]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditedShoe(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const filePath = URL.createObjectURL(file);
+      setImageUrl(filePath);
+      setImageFile(file);
+    }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const updateShoeDetails = async (shoeDetails) => {
+    const response = await fetch(`${API_URL}shoe`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(shoeDetails)
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(`Error ${response.status}: ${responseText}`);
     }
+
+    return response.json();
+  };
+
+  const updateShoeImage = async (id, imageFile) => {
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${API_URL}shoe/image`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(`Error ${response.status}: ${responseText}`);
+    }
+
+    return response.json();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
+
     try {
-      const formData = new FormData();
-      
-      // Añadir los campos de texto al FormData
-      Object.keys(editedShoe).forEach(key => {
-        formData.append(key, editedShoe[key]);
-      });
-      
-      // Añadir la imagen si se ha seleccionado una nueva
-      if (image) {
-        formData.append('image', image);
+      const shoeDetails = {
+        id: item.id,
+        brand,
+        modelName,
+        price: parseFloat(price),
+        discount: parseFloat(discount),
+      };
+
+      await updateShoeDetails(shoeDetails);
+
+      if (imageFile) {
+        await updateShoeImage(item.id, imageFile);
       }
 
-      const response = await fetch(`${API_URL}shoe/image`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      onSubmit(result.newShoe);
-    } catch (error) {
-      console.error('Error editing shoe:', error);
-    } finally {
-      setIsLoading(false);
+      setAlert({ type: 'success', message: 'Zapato actualizado exitosamente' });
+      await fetchInventory();
+      console.log('Inventory updated after editing shoe');
       onClose();
+    } catch (error) {
+      console.error('Error updating shoe:', error);
+      setAlert({ type: 'error', message: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2>Editar Referencia</h2>
-          <button onClick={onClose} className="close-button">&times;</button>
+    <Modal isOpen={isOpen} onClose={onClose} title="Editar Zapato">
+      <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
+        <div className="w-full sm:w-1/2">
+          <TextInput
+            placeholder="Marca"
+            type="text"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            required
+            disabled={loading}
+          />
         </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="brand">Marca:</label>
-              <input
-                id="brand"
-                type="text"
-                name="brand"
-                value={editedShoe.brand}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="price">Precio:</label>
-              <input
-                id="price"
-                type="number"
-                name="price"
-                value={editedShoe.price}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="modelName">Nombre del Modelo:</label>
-              <input
-                id="modelName"
-                type="text"
-                name="modelName"
-                value={editedShoe.modelName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="discount">Descuento:</label>
-              <input
-                id="discount"
-                type="number"
-                name="discount"
-                value={editedShoe.discount}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="image">Imagen:</label>
-              <input
-                id="image"
-                type="file"
-                onChange={handleImageChange}
-                accept="image/*"
-              />
-            </div>
-            {previewUrl && (
-              <div className="image-preview">
-                <img src={previewUrl} alt="Preview" />
-              </div>
-            )}
-            <button type="submit" className="submit-button" disabled={isLoading}>
-              {isLoading ? <Spinner size="sm" light={true} /> : 'Guardar'}
-            </button>
-          </form>
+        <div className="w-full sm:w-1/2">
+          <TextInput
+            placeholder="Nombre del Modelo"
+            type="text"
+            value={modelName}
+            onChange={(e) => setModelName(e.target.value)}
+            required
+            disabled={loading}
+          />
         </div>
-      </div>
-    </div>
+        <div className="w-full sm:w-1/2">
+          <TextInput
+            placeholder="Precio"
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+            disabled={loading}
+          />
+        </div>
+        <div className="w-full sm:w-1/2">
+          <TextInput
+            placeholder="Descuento"
+            type="number"
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            min="0"
+            max="100"
+            required
+            disabled={loading}
+          />
+        </div>
+        <div className="w-full sm:w-1/2 flex flex-col items-center">
+          <Button
+            color="blue"
+            onClick={() => document.getElementById('image-input').click()}
+            className="rounded-full"
+            disabled={loading}
+          >
+            Seleccionar Imagen
+          </Button>
+          <input
+            id="image-input"
+            type="file"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={loading}
+          />
+          {imageUrl && (
+            <img src={imageUrl} alt="Vista previa" className="mt-2 rounded-md h-20" />
+          )}
+        </div>
+        <div className="w-full flex justify-end space-x-2">
+          <Button type="button" color="gray" onClick={onClose} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button type="submit" color="blue" disabled={loading}>
+            {loading ? <Spinner size="sm" /> : 'Guardar'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
-export default EditReference;
+export default EditShoeForm;

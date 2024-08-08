@@ -19,6 +19,7 @@ const SessionTimer = ({ tokenExpirationTime }) => {
       setShowModal(true);
       setTimeout(() => {
         setShowModal(false);
+        window.location.reload();
         navigate('/login');
       }, 3000);
     };

@@ -1,38 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { Button, TextInput, Alert, Spinner } from 'flowbite-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, TextInput, Spinner, Alert } from 'flowbite-react';
 import { API_URL } from '../../../../config';
+import './ReferenceForm.css';
 
-const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading, fetchInventory }) => {
+const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInventory }) => {
   const [brand, setBrand] = useState('');
   const [modelName, setModelName] = useState('');
   const [sizeData, setSizeData] = useState([{ size: '', amount: '' }]);
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertContent, setAlertContent] = useState('');
+  const [alertType, setAlertType] = useState('success');
 
   useEffect(() => {
     if (item) {
-      setBrand(item.shoe.brand);
-      setModelName(item.shoe.modelName);
-      setPrice(item.price || '');
-      setImageUrl(item.shoe.imageUrl || '');
-      setSizeData(item.sizes ? item.sizes.map((size, idx) => ({ size, amount: item.amounts[idx] })) : [{ size: '', amount: '' }]);
-    } else {
-      setBrand('');
-      setModelName('');
-      setPrice('');
-      setImageUrl('');
-      setSizeData([{ size: '', amount: '' }]);
-      setImageFile(null);
+      setBrand(item.shoe?.brand || '');
+      setModelName(item.shoe?.modelName || '');
+      setPrice(item.shoe?.price?.toString() || '');
+      setImageUrl(item.shoe?.imageUrl || '');
+      setSizeData(
+        item.sizes
+          ? item.sizes.map((size, idx) => ({
+              size: size.toString(),
+              amount: item.amounts[idx].toString(),
+            }))
+          : [{ size: '', amount: '' }]
+      );
     }
   }, [item]);
+
+  const handleAlert = (message, type) => {
+    setAlertContent(message);
+    setAlertType(type);
+    setShowAlert(true);
+
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 3000);
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const filePath = URL.createObjectURL(file);
-      setImageUrl(filePath);
       setImageFile(file);
+      setImageUrl(URL.createObjectURL(file));
+      console.log('Archivo seleccionado:', file.name);
     }
   };
 
@@ -46,57 +62,90 @@ const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading, fe
     setSizeData([...sizeData, { size: '', amount: '' }]);
   };
 
+  const validateFormData = () => {
+    const sizes = sizeData.map((item) => parseInt(item.size));
+    const amounts = sizeData.map((item) => parseInt(item.amount));
+    if (sizes.some(isNaN) || amounts.some(isNaN) || isNaN(parseFloat(price))) {
+      throw new Error('Invalid input data');
+    }
+    return {
+      brand,
+      modelName,
+      price: parseFloat(price),
+      sizes,
+      amounts,
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const shoeData = validateFormData();
+
       const formData = new FormData();
       formData.append('brand', brand);
       formData.append('modelName', modelName);
-      formData.append('price', price);
-      formData.append('image', imageFile);
+      formData.append('price', shoeData.price);
+      formData.append('color', 'Rojo');
 
-      sizeData.forEach((item, index) => {
-        formData.append(`sizes[${index}]`, item.size);
-        formData.append(`amounts[${index}]`, item.amount);
+      if (!imageFile) {
+        throw new Error('Debe seleccionar una imagen');
+      }
+
+      formData.append('image', imageFile, imageFile.name);
+
+      shoeData.sizes.forEach((size, index) => {
+        formData.append(`sizes[${index}]`, size);
+      });
+      shoeData.amounts.forEach((amount, index) => {
+        formData.append(`amounts[${index}]`, amount);
       });
 
       const response = await fetch(`${API_URL}shoe`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al actualizar el zapato');
+        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
       }
 
-      setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
-      fetchInventory();  // Llamar a la función para actualizar el inventario
-      setLoading(false);
-      setTimeout(() => {
-        setAlert(null);
-        setBrand('');
-        setModelName('');
-        setPrice('');
-        setImageUrl('');
-        setSizeData([{ size: '', amount: '' }]);
-        setImageFile(null);
-        onClose();
-      }, 2000);
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data);
+
+      handleAlert('Referencia añadida correctamente', 'success');
+
+      // Llamar a fetchInventory después de agregar la referencia
+      if (typeof fetchInventory === 'function') {
+        await fetchInventory();
+        console.log('Inventory updated after adding reference');
+      } else {
+        console.error('fetchInventory is not a function');
+      }
+
+      onClose(); // Cerrar el formulario
     } catch (e) {
-      console.log(e);
-      setAlert({ type: 'error', message: e.message });
+      console.error('Error en la solicitud:', e);
+      handleAlert(e.message, 'error');
+    } finally {
       setLoading(false);
-    }
+    };
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
+      {/* Mostrar la alerta si `showAlert` es verdadero */}
+      {showAlert && (
+        <div className={`alert ${alertType} ${showAlert ? 'show' : ''}`}>
+          {alertContent}
+        </div>
+      )}
       <div className="w-full sm:w-1/2">
         <TextInput
           placeholder="Marca"
@@ -153,24 +202,29 @@ const ReferenceForm = ({ item, token, onClose, setAlert, setLoading, loading, fe
         />
       </div>
       <div className="w-full sm:w-1/2 flex flex-col items-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*"
+          disabled={loading}
+        />
         <Button
           color="blue"
-          onClick={() => document.getElementById('image-input').click()}
+          onClick={() => fileInputRef.current.click()}
           className="rounded-full"
           disabled={loading}
         >
           Seleccionar Imagen
         </Button>
-        <input
-          id="image-input"
-          type="file"
-          onChange={handleFileChange}
-          className="hidden"
-          required
-          disabled={loading}
-        />
         {imageUrl && (
-          <img src={imageUrl} alt="Vista previa" className="mt-2 rounded-md" />
+          <img
+            src={imageUrl}
+            alt="Vista previa"
+            className="mt-2 rounded-md object-cover"
+            style={{ maxWidth: '100%', maxHeight: '200px' }}
+          />
         )}
       </div>
       <div className="w-full flex justify-end space-x-2">
