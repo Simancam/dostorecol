@@ -27,7 +27,6 @@ const Inventory = () => {
       if (!response.ok) {
         throw new Error('Error fetching inventory');
       }
-      console.log('Inventory Fetching:');
       const data = await response.json();
       setInventory(data);
       setTotalCount(data.reduce((total, item) => total + item.totalAmount, 0));
@@ -71,15 +70,33 @@ const Inventory = () => {
       const data = await response.json();
       console.log(data);
       setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
-      await fetchInventory();
-      console.log('Inventory updated after adding reference');
+
+      // Iniciar la desaparición después de 1.5 segundos
+      setTimeout(() => {
+        document.querySelector('.alert').classList.add('fade-out');
+      }, 1500);
+
+      // Remover la alerta después de que se desvanezca
       setTimeout(() => {
         setAlert(null);
       }, 2000);
+
+      await fetchInventory();
       return Promise.resolve();
     } catch (error) {
       console.error('Error:', error);
       setAlert({ type: 'error', message: 'Error al añadir zapato' });
+
+      // Iniciar la desaparición después de 1.5 segundos
+      setTimeout(() => {
+        document.querySelector('.alert').classList.add('fade-out');
+      }, 1500);
+
+      // Remover la alerta después de que se desvanezca
+      setTimeout(() => {
+        setAlert(null);
+      }, 2000);
+
       return Promise.reject();
     }
   };
@@ -88,9 +105,9 @@ const Inventory = () => {
     <div>
       {alert && (
         <div className="fixed top-4 right-4 z-50">
-          <Alert color={alert.type === 'success' ? 'green' : 'red'}>
+          <div className={`alert ${alert.type === 'success' ? 'success' : 'error'}`}>
             {alert.message}
-          </Alert>
+          </div>
         </div>
       )}
       <h1 className="text-4xl font-bold mb-4">Inventario</h1>

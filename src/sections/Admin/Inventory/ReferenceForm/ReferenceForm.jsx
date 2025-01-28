@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, TextInput, Spinner, Alert } from 'flowbite-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Button, TextInput, Spinner } from 'flowbite-react';
 import { API_URL } from '../../../../config';
 import './ReferenceForm.css';
 
-const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInventory }) => {
+const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInventory, setAlert }) => {
   const [brand, setBrand] = useState('');
   const [modelName, setModelName] = useState('');
   const [sizeData, setSizeData] = useState([{ size: '', amount: '' }]);
@@ -11,10 +11,6 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
-
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertContent, setAlertContent] = useState('');
-  const [alertType, setAlertType] = useState('success');
 
   useEffect(() => {
     if (item) {
@@ -32,16 +28,6 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
       );
     }
   }, [item]);
-
-  const handleAlert = (message, type) => {
-    setAlertContent(message);
-    setAlertType(type);
-    setShowAlert(true);
-
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 3000);
-  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -62,7 +48,7 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
     setSizeData([...sizeData, { size: '', amount: '' }]);
   };
 
-  const validateFormData = () => {
+  const validateFormData = useCallback(() => {
     const sizes = sizeData.map((item) => parseInt(item.size));
     const amounts = sizeData.map((item) => parseInt(item.amount));
     if (sizes.some(isNaN) || amounts.some(isNaN) || isNaN(parseFloat(price))) {
@@ -75,9 +61,9 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
       sizes,
       amounts,
     };
-  };
+  }, [brand, modelName, price, sizeData]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -119,33 +105,35 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
       const data = await response.json();
       console.log('Respuesta del servidor:', data);
 
-      handleAlert('Referencia añadida correctamente', 'success');
+      // Usar setAlert para mostrar la alerta
+      setAlert({ type: 'success', message: 'Referencia añadida correctamente' });
 
-      // Llamar a fetchInventory después de agregar la referencia
+      // Limpiar campos del formulario
+      setBrand('');
+      setModelName('');
+      setSizeData([{ size: '', amount: '' }]);
+      setPrice('');
+      setImageUrl('');
+      setImageFile(null);
+
+      // Actualizar el inventario después de agregar la referencia
       if (typeof fetchInventory === 'function') {
         await fetchInventory();
         console.log('Inventory updated after adding reference');
       } else {
         console.error('fetchInventory is not a function');
       }
-
       onClose(); // Cerrar el formulario
     } catch (e) {
       console.error('Error en la solicitud:', e);
-      handleAlert(e.message, 'error');
+      setAlert({ type: 'error', message: e.message });
     } finally {
       setLoading(false);
-    };
-  };
+    }
+  }, [brand, modelName, price, sizeData, imageFile, token, fetchInventory, onClose, setAlert, setLoading, validateFormData]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap gap-4">
-      {/* Mostrar la alerta si `showAlert` es verdadero */}
-      {showAlert && (
-        <div className={`alert ${alertType} ${showAlert ? 'show' : ''}`}>
-          {alertContent}
-        </div>
-      )}
       <div className="w-full sm:w-1/2">
         <TextInput
           placeholder="Marca"
@@ -231,7 +219,7 @@ const ReferenceForm = ({ item, token, onClose, setLoading, loading, fetchInvento
         <Button type="button" color="gray" onClick={onClose} disabled={loading}>
           Cancelar
         </Button>
-        <Button type="submit" color="blue" disabled={loading}>
+        <Button type="submit" color="green" disabled={loading}>
           {loading ? <Spinner size="sm" /> : 'Guardar'}
         </Button>
       </div>

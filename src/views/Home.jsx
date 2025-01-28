@@ -38,7 +38,6 @@ const Home = () => {
             <Marquee text="| ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ | | ‎ ‎ ‎ ENVIOS A TODA COLOMBIA ‎ ‎ ‎ |" />
             <Header />
             <Navbar onFilter={handleFilter} />
-            <Cards filteredShoes={filteredShoes} />
             <Footer />
         </>
     );

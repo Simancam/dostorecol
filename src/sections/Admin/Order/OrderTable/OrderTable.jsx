@@ -26,13 +26,12 @@ const OrdersTable = ({ setTotalCount }) => {
         }
 
         const fetchedOrders = await response.json();
-        // Ordenar las órdenes por estado
         const sortedOrders = fetchedOrders.sort((a, b) => {
           const orderPriority = {
-            'Pagado': 1,
-            'Enviado': 2,
-            'Recibido': 3,
-            'Cancelado': 4
+            Pagado: 1,
+            Enviado: 2,
+            Recibido: 3,
+            Cancelado: 4,
           };
           return orderPriority[a.status] - orderPriority[b.status];
         });
@@ -51,20 +50,38 @@ const OrdersTable = ({ setTotalCount }) => {
 
   const updateOrderStatus = async (orderId, status) => {
     try {
+      const currentOrder = orders.find((order) => order.id === orderId);
+      if (!currentOrder) {
+        throw new Error('Order not found');
+      }
+
+      const price = currentOrder.discountedPrice || currentOrder.basePrice || 0;
+
+      const requestBody = {
+        orderId,
+        status,
+        price,
+      };
+
+      console.log('Request Body:', requestBody);
+
       const response = await fetch(`${API_URL}order`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ orderId, status }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
         throw new Error('Failed to update order status');
       }
 
       const { newOrder } = await response.json();
+
       setOrders((prevOrders) =>
         prevOrders.map((prevOrder) =>
           prevOrder.id === orderId ? { ...prevOrder, status: newOrder.status } : prevOrder
@@ -81,19 +98,20 @@ const OrdersTable = ({ setTotalCount }) => {
     setAlertContent(message);
     setAlertType(type);
     setShowAlert(true);
-    console.log('Alert should be shown with message:', message);
 
     setTimeout(() => {
       setShowAlert(false);
     }, 3000);
   };
 
-  // Calcular el índice del primer y último elemento de la página actual
+  const formatPriceToCOP = (price) => {
+    return `$${price.toLocaleString('es-CO')}`;
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = orders.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Cambiar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
@@ -110,6 +128,7 @@ const OrdersTable = ({ setTotalCount }) => {
             <th className="px-4 py-2">ID del Zapato</th>
             <th className="px-4 py-2">Talla</th>
             <th className="px-4 py-2">Estado</th>
+            <th className="px-4 py-2">Precio</th>
             <th className="px-4 py-2 actions-column">Acciones</th>
           </tr>
         </thead>
@@ -120,6 +139,9 @@ const OrdersTable = ({ setTotalCount }) => {
               <td className="border px-4 py-2">{order.shoeId}</td>
               <td className="border px-4 py-2">{order.size}</td>
               <td className="border px-4 py-2">{order.status}</td>
+              <td className="border px-4 py-2">
+                {formatPriceToCOP(order.price || order.discountedPrice || 0)}
+              </td>
               <td className="border px-4 py-2 text-center actions-column">
                 <i
                   className="bi bi-check-circle text-green-500 cursor-pointer"
@@ -147,14 +169,14 @@ const OrdersTable = ({ setTotalCount }) => {
         </tbody>
       </table>
       <div className="pagination">
-        <button 
-          className="pagination-button" 
-          onClick={() => paginate(currentPage - 1)} 
+        <button
+          className="pagination-button"
+          onClick={() => paginate(currentPage - 1)}
           disabled={currentPage === 1}
         >
           Anterior
         </button>
-        
+
         {Array.from({ length: Math.ceil(orders.length / itemsPerPage) }).map((_, index) => (
           <button
             key={index}
@@ -164,15 +186,15 @@ const OrdersTable = ({ setTotalCount }) => {
             {index + 1}
           </button>
         ))}
-        
-        <button 
-          className="pagination-button" 
-          onClick={() => paginate(currentPage + 1)} 
+
+        <button
+          className="pagination-button"
+          onClick={() => paginate(currentPage + 1)}
           disabled={currentPage === Math.ceil(orders.length / itemsPerPage)}
         >
           Siguiente
         </button>
-        
+
         <span className="pagination-info">
           Página {currentPage} de {Math.ceil(orders.length / itemsPerPage)}
         </span>
